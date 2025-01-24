@@ -1,48 +1,42 @@
-from flask import Flask, request, make_response
+from flask import Flask, render_template, redirect, url_for
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="templates")
 
-@app.route('/')
+
+@app.route("/")
 def index():
-    return "<h1>Hello world</h1>"
+    myValue = "Something"
+    myResult = 10 + 20
+    myList = [10, 20, 30]
+    # return render_template('index.html', xyz=myValue, abc=myResult)
+    return render_template("index.html", someList=myList)
 
-@app.route('/hello', methods=['POST', 'GET'])
-def hello():
-    response = make_response("HELLO WORLD\n")
-    response.status_code = 202
-    response.headers['content-type'] = 'application/octet-stream'
-    return response
 
-@app.route('/hello1', methods=['POST', 'GET'])
-def hello1():
-    return "Hello GET\n", 201
-    
-@app.route('/hello2', methods=['POST', 'GET'])
-def hello2():
-    if request.method == 'GET':
-        return "Hello GET\n"
-    elif request.method == 'POST':
-        return "Hello POST\n"
-    else:
-        return 'You will never see this message\n'
+@app.route("/other")
+def other():
+    some_text = "Hello World"
+    return render_template("other.html", some_text=some_text)
 
-@app.route('/great/<name>')
-def greet(name):
-    return f"Hello {name}"
+@app.route("/redirect_endpoint")
+def redirect_endpoint():
+    some_text = "Hello World"
+    return redirect(url_for("other"))
 
-@app.route('/add/<int:num1>/<int:num2>')
-def add(num1, num2):
-    return f"{num1} + {num2} = {num1 + num2}"
 
-@app.route('/handle_url_params')
-def handle_params():
-    if 'greeting' in request.args.keys() and 'name' in request.args.keys():
-        greeting = request.args.get('greeting')
-        name = request.args.get('name')
-        return f"{greeting} {name}"
-    else:
-        return "some params are missing"
+@app.template_filter("reverse_string")
+def reverse_string(s):
+    return s[::-1]
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5555, debug=True)
 
+@app.template_filter("repeat")
+def repeat(s, times=2):
+    return s * times
+
+
+@app.template_filter("alternate_case")
+def alternate_case(s):
+    return "".join([c.upper() if i % 2 == 0 else c.lower() for i, c in enumerate(s)])
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5555, debug=True)
